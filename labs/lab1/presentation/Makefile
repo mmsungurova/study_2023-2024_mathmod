@@ -1,28 +1,29 @@
-SRC = presentation.md
+# FILES = $(patsubst %.md, %.docx, $(wildcard *.md))
 FILES += $(patsubst %.md, %.pdf, $(wildcard *.md))
-FILES += $(patsubst %.md, %.html, $(wildcard *.md))
 
 FILTERS =
 PDF_ENGINE =
 PDF_OPTIONS =
 PDF_FORMAT_OPTIONS = -t beamer --slide-level=2
 
-FILTERS += --citeproc
-# FILTERS += -F pandoc-crossref
-PDF_ENGINE += --pdf-engine=xelatex
+# FILTERS += -F pandoc-citeproc
+FILTERS += -F pandoc-crossref
+PDF_ENGINE += --pdf-engine=lualatex
 PDF_OPTIONS += --number-sections
 
-REVEALJS_THEME = beige
+%.docx: %.md
+	-pandoc "$<" $(FILTERS) -o "$@"
 
 %.pdf: %.md
-	-@pandoc "$<" $(FILTERS) $(PDF_ENGINE) $(PDF_OPTIONS) $(PDF_FORMAT_OPTIONS) -o "$@"
+	-pandoc "$<" $(FILTERS) $(PDF_ENGINE) $(PDF_OPTIONS) $(PDF_FORMAT_OPTIONS) -o "$@"
 
-%.html: %.md
-	-@pandoc "$<" --embed-resources --standalone -t revealjs -V theme=$(REVEALJS_THEME) -o "$@"
+%.pdf: %.docx
+	-unoconv "$<" "$@"
 
 all: $(FILES)
+	@echo $(FILES)
 
 clean:
-	-@rm $(FILES) *~
+	-rm $(FILES) *~
 
 cleanall: clean
